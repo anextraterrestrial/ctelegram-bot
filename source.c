@@ -10,8 +10,8 @@ struct bot {
     unsigned char *token;
 };
 
-struct bot *_bot=0;
-int _last_update=9999999;
+struct bot *_bot = 0;
+int _last_update = 9999999;
 
 static unsigned char *_update_keys[3] = {"ok", "result"};
 static unsigned char *_message_keys[4] = {"message", "message_id", "from"};
@@ -109,7 +109,7 @@ char *compile_post_parameters(struct parameters *params)
     char *buf = malloc(520);
 
     *buf = 0;
-    int i=0;
+    int i = 0;
     while((params[i].actualvalue) && (params[i].keyword) && (params[i].usable == 1)) {
         if(*(buf) == 0)
             sprintf(buf, "%s=%s", params[i].keyword, params[i].actualvalue);
@@ -125,9 +125,9 @@ char *compile_post_parameters(struct parameters *params)
 
 void make_param(struct parameters *params, char const *keyword, char const *value, int index)
 {
-    params[index].keyword=(unsigned char *)keyword;
-    params[index].actualvalue=(unsigned char *)value;
-    params[index].usable=1;
+    params[index].keyword       = (unsigned char *)keyword;
+    params[index].actualvalue   = (unsigned char *)value;
+    params[index].usable        = 1;
 }
 
 //-----------------------------------------------------------
@@ -143,28 +143,29 @@ void get_updates(struct updates *update)
     make_param(param, "offset", offset, 0);
     make_param(param, "timeout", "10", 1);
 
-    char const *params = compile_post_parameters(param);
-    char *response = call("getUpdates", params);
+    char const *params      = compile_post_parameters(param);
+    char *response          = call("getUpdates", params);
 
-    cJSON *jsondata = cJSON_Parse(response);
-    cJSON *success=getitem(jsondata, "ok");
-    cJSON *result=getitem(jsondata, "result");
-    cJSON *from_section=0;
-    cJSON *chat_section=0;
-    cJSON *update_id=0;
-    cJSON *message=0;
-    cJSON *title=0;
-    cJSON *tmp=0;
+    cJSON *jsondata         = cJSON_Parse(response);
+    cJSON *success          = getitem(jsondata, "ok");
+    cJSON *result           = getitem(jsondata, "result");
+    cJSON *from_section     = 0;
+    cJSON *chat_section     = 0;
+    cJSON *update_id        = 0;
+    cJSON *message          = 0;
+    cJSON *title            = 0; 
+    cJSON *tmp              = 0;
 
-    param=0;
+    param = 0;
     free(param);
     if(success->valueint == 1) {
         cJSON *results=getitem(jsondata, _update_keys[1]);
         cJSON_ArrayForEach(result, results) {
 
-            update_id = getitem(result, "update_id");
-            _last_update = update_id->valueint;
-            message=getitem(result, *_message_keys);
+            update_id       = getitem(result, "update_id");
+            _last_update    = update_id->valueint;
+            message         = getitem(result, *_message_keys);
+            
             cJSON *_tmp_message_keys[10];
 
             for(int i = 0; i < sizeof(_message_keys)/sizeof(*_message_keys); i++) {
@@ -187,26 +188,26 @@ void get_updates(struct updates *update)
 
                 if(tmp) 
                     _write(_author_keys_nousrnm, from_section, _tmp_message_keys, 
-                        sizeof(_author_keys_nousrnm)/sizeof(*_author_keys_nousrnm),
+                        sizeof(_author_keys_nousrnm) / sizeof(*_author_keys_nousrnm),
                         1
                     );
                 else
                     _write(_author_keys_nousrnm, from_section, _tmp_message_keys, 
-                        sizeof(_author_keys_nousrnm)/sizeof(*_author_keys_nousrnm),
+                        sizeof(_author_keys_nousrnm) / sizeof(*_author_keys_nousrnm),
                         0
                     );
 
-                if(tmp) write_message_author(_tmp_message_keys,update,1);
-                else    write_message_author(_tmp_message_keys,update,0);
+                if(tmp) write_message_author(_tmp_message_keys, update, 1);
+                else    write_message_author(_tmp_message_keys, update, 0);
                                 
                 if(tmp)
                     _write(_private_chat_keys_nousrnm, chat_section, _tmp_message_keys, 
-                        sizeof(_private_chat_keys_nousrnm)/sizeof(*_private_chat_keys_nousrnm),
+                        sizeof(_private_chat_keys_nousrnm) / sizeof(*_private_chat_keys_nousrnm),
                         1
                     );
                 else 
                     _write(_private_chat_keys_nousrnm, chat_section, _tmp_message_keys, 
-                        sizeof(_private_chat_keys_nousrnm)/sizeof(*_private_chat_keys_nousrnm),
+                        sizeof(_private_chat_keys_nousrnm) / sizeof(*_private_chat_keys_nousrnm),
                         0
                     );
 
@@ -214,8 +215,8 @@ void get_updates(struct updates *update)
                     If the message is from a private chat, the identifier from chat section will be user's id,
                     and simple integer can handle it. 
                 */
-                if(tmp) write_source_publicgroupchat(_tmp_message_keys,update,1,1);
-                else    write_source_publicgroupchat(_tmp_message_keys,update,1,0);
+                if(tmp) write_source_publicgroupchat(_tmp_message_keys, update, 1, 1);
+                else    write_source_publicgroupchat(_tmp_message_keys, update, 1, 0);
                 
 
             }
@@ -223,27 +224,27 @@ void get_updates(struct updates *update)
                 tmp = getitem(chat_section, "username");
                 if(tmp) {        
                     _write(_publicgroup_chat_keys, chat_section, _tmp_message_keys, 
-                        sizeof(_publicgroup_chat_keys)/sizeof(*_publicgroup_chat_keys),
+                        sizeof(_publicgroup_chat_keys) / sizeof(*_publicgroup_chat_keys),
                         0
                     );
 
-                    if(tmp) write_source_publicgroupchat(_tmp_message_keys,update,0,1);
-                    else    write_source_publicgroupchat(_tmp_message_keys,update,1,0);     
+                    if(tmp) write_source_publicgroupchat(_tmp_message_keys, update, 0, 1);
+                    else    write_source_publicgroupchat(_tmp_message_keys, update, 1, 0);     
                 }
                 else {                   
                     _write(_privategroup_chat_keys, chat_section, _tmp_message_keys, 
-                        sizeof(_privategroup_chat_keys)/sizeof(*_privategroup_chat_keys),
+                        sizeof(_privategroup_chat_keys) / sizeof(*_privategroup_chat_keys),
                         0
                     );
                     write_source_groupchat(_tmp_message_keys,update);
                 }
 
                 _write(_author_keys_nousrnm, from_section, _tmp_message_keys, 
-                    sizeof(_author_keys_nousrnm)/sizeof(*_author_keys_nousrnm),
+                    sizeof(_author_keys_nousrnm) / sizeof(*_author_keys_nousrnm),
                     0
                 );
 
-                write_message_author(_tmp_message_keys,update,0);
+                write_message_author(_tmp_message_keys, update, 0);
             }
             
             cJSON *date = getitem(message, "date");
